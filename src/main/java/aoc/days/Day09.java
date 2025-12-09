@@ -55,7 +55,7 @@ public class Day09 extends Day<Long> {
                     if(rectSize > result) {
                         result = rectSize;
 
-          //              println(p1 + " ** " + p2);
+                        //              println(p1 + " ** " + p2);
                     }
                 }
 
@@ -130,9 +130,9 @@ public class Day09 extends Day<Long> {
 
 
         /**
-         * Version COMPLÈTE : teste les coins ET vérifie qu'aucun segment du polygone
-         * ne traverse le rectangle
-         * Plus lent : O(n²) mais précis à 100%
+         * Vérifie si un rectangle est valide :
+         * 1. Les 4 coins doivent être dans le polygone
+         * 2. Aucun segment ne doit traverser STRICTEMENT l'intérieur
          *
          * @param corner1 Premier coin du rectangle
          * @param corner2 Coin opposé du rectangle
@@ -150,7 +150,7 @@ public class Day09 extends Day<Long> {
             if (!contains(maxX, maxY)) return false;
             if (!contains(minX, maxY)) return false;
 
-            // 2. Vérifier qu'aucun segment du polygone ne traverse le rectangle
+            // 2. Vérifier qu'aucun segment ne traverse STRICTEMENT l'intérieur
             int x1 = x[n - 1];
             int y1 = y[n - 1];
 
@@ -158,9 +158,32 @@ public class Day09 extends Day<Long> {
                 int x2 = x[i];
                 int y2 = y[i];
 
-                // Vérifie si le segment (x1,y1)-(x2,y2) traverse l'intérieur du rectangle
-                if (segmentCrossesRectangle(x1, y1, x2, y2, minX, maxX, minY, maxY)) {
-                    return false;
+                // Segment horizontal
+                if (y1 == y2) {
+                    int y = y1;
+                    // Le segment est-il STRICTEMENT à l'intérieur (pas sur les bords) ?
+                    if (y > minY && y < maxY) {
+                        int segMinX = Math.min(x1, x2);
+                        int segMaxX = Math.max(x1, x2);
+                        // Le segment chevauche-t-il l'intérieur du rectangle ?
+                        if (segMinX < maxX && segMaxX > minX) {
+                            return false; // Traverse l'intérieur !
+                        }
+                    }
+                }
+
+                // Segment vertical
+                if (x1 == x2) {
+                    int x = x1;
+                    // Le segment est-il STRICTEMENT à l'intérieur (pas sur les bords) ?
+                    if (x > minX && x < maxX) {
+                        int segMinY = Math.min(y1, y2);
+                        int segMaxY = Math.max(y1, y2);
+                        // Le segment chevauche-t-il l'intérieur du rectangle ?
+                        if (segMinY < maxY && segMaxY > minY) {
+                            return false; // Traverse l'intérieur !
+                        }
+                    }
                 }
 
                 x1 = x2;
@@ -168,54 +191,6 @@ public class Day09 extends Day<Long> {
             }
 
             return true;
-        }
-
-        /**
-         * Vérifie si un segment du polygone traverse l'intérieur du rectangle
-         */
-        private boolean segmentCrossesRectangle(int x1, int y1, int x2, int y2,
-                                                int minX, int maxX, int minY, int maxY) {
-            // Si les deux points sont entièrement d'un côté du rectangle, pas de traversée
-            if ((x1 < minX && x2 < minX) || (x1 > maxX && x2 > maxX) ||
-                    (y1 < minY && y2 < minY) || (y1 > maxY && y2 > maxY)) {
-                return false;
-            }
-
-            // Si un des points est strictement à l'intérieur du rectangle
-            // alors un segment du polygone traverse le rectangle
-            boolean p1Inside = x1 > minX && x1 < maxX && y1 > minY && y1 < maxY;
-            boolean p2Inside = x2 > minX && x2 < maxX && y2 > minY && y2 < maxY;
-
-            if (p1Inside || p2Inside) {
-                return true;
-            }
-
-            // Vérifie l'intersection avec chaque côté du rectangle
-            if (segmentsIntersect(x1, y1, x2, y2, minX, minY, minX, maxY)) return true; // Gauche
-            if (segmentsIntersect(x1, y1, x2, y2, maxX, minY, maxX, maxY)) return true; // Droite
-            if (segmentsIntersect(x1, y1, x2, y2, minX, minY, maxX, minY)) return true; // Bas
-            if (segmentsIntersect(x1, y1, x2, y2, minX, maxY, maxX, maxY)) return true; // Haut
-
-            return false;
-        }
-
-        /**
-         * Vérifie si deux segments se croisent (produit vectoriel)
-         */
-        private boolean segmentsIntersect(int x1, int y1, int x2, int y2,
-                                          int x3, int y3, int x4, int y4) {
-            long d = (long)(x1 - x2) * (y3 - y4) - (long)(y1 - y2) * (x3 - x4);
-            if (d == 0) return false; // Segments parallèles
-
-            long t = (long)(x1 - x3) * (y3 - y4) - (long)(y1 - y3) * (x3 - x4);
-            long u = (long)(x1 - x3) * (y1 - y2) - (long)(y1 - y3) * (x1 - x2);
-
-            // Vérifie si l'intersection est dans les deux segments [0, 1]
-            if (d > 0) {
-                return t >= 0 && t <= d && u >= 0 && u <= d;
-            } else {
-                return t <= 0 && t >= d && u <= 0 && u >= d;
-            }
         }
 
         /**
