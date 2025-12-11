@@ -23,7 +23,11 @@
             <artifactId>lombok</artifactId>
             <version>1.18.42</version>
         </dependency>
-        <!-- Test dependencies -->
+        <dependency>
+            <groupId>com.google.ortools</groupId>
+            <artifactId>ortools-java</artifactId>
+            <version>9.8.3296</version>
+        </dependency>        <!-- Test dependencies -->
         <!-- Junit -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
